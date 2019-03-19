@@ -325,6 +325,27 @@ int color_test()
 }
 
 /**
+ * Function       color_led_pwm
+ * @author        Danny
+ * @date          2017.07.25
+ * @brief         七彩灯亮指定的颜色
+ * @param[in1]    v_iRed:指定的颜色值（0-255）
+ * @param[in2]    v_iGreen:指定的颜色值（0-255）
+ * @param[in3]    v_iBlue:指定的颜色值（0-255）
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void color_led_pwm(int v_iRed, int v_iGreen, int v_iBlue)
+{
+    analogWrite(LED_R, v_iRed);
+    analogWrite(LED_G, v_iGreen);
+    analogWrite(LED_B, v_iBlue);
+    delay(100);
+    return;
+}
+
+/**
  * Function       color_dis
  * @author        liusen
  * @date          2017.08.26
@@ -459,6 +480,25 @@ void follow_light_test()
 }
 
 /**
+ * Function       servo_appointed_detection
+ * @author        Danny
+ * @date          2017.07.25
+ * @brief         舵机旋转到指定角度
+ * @param[in]     pos：指定的角度
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void servo_appointed_detection(int pos)
+{
+    int i = 0;
+    for (i = 0; i <= 15; i++)    //产生PWM个数，等效延时以保证能转到响应角度
+    {
+        servo_pulse(ServoPin, pos); //模拟产生PWM
+    }
+}
+
+/**
  * Function       run
  * @author        Danny
  * @date          2017.07.25
@@ -479,48 +519,6 @@ void run()
     digitalWrite(Right_motor_go, HIGH);  //右电机前进使能
     digitalWrite(Right_motor_back, LOW); //右电机后退禁止
     analogWrite(Right_motor_pwm, CarSpeedControl);
-}
-
-/**
- * Function       careRun
- * @author        lijing
- * @date          2019.03.19
- * @brief         小车前进(谨慎的，遇到障碍停止并转向)
- * @param[in]     void
- * @param[out]    void
- * @retval        void
- * @par History   无
- */
-void careRun()
-{
-    servo_appointed_detection(90); //front
-    Distance();
-
-    if (distance > 20) run();
-    else
-    {
-        servo_appointed_detection(0); //right
-        Distance();
-        if (distance > 20)
-        {
-            servo_appointed_detection(90);
-            spin_right();
-            delay(200);
-        }
-        else
-        {
-            servo_appointed_detection(180); //left
-            Distance();
-            if (distance > 20)
-            {
-                servo_appointed_detection(90);
-                spin_left();
-                delay(200);
-            }
-            else
-                brake();
-        }
-    }
 }
 
 /**
@@ -682,45 +680,6 @@ void whistle()
 }
 
 /**
- * Function       servo_appointed_detection
- * @author        Danny
- * @date          2017.07.25
- * @brief         舵机旋转到指定角度
- * @param[in]     pos：指定的角度
- * @param[out]    void
- * @retval        void
- * @par History   无
- */
-void servo_appointed_detection(int pos)
-{
-    int i = 0;
-    for (i = 0; i <= 15; i++)    //产生PWM个数，等效延时以保证能转到响应角度
-    {
-        servo_pulse(ServoPin, pos); //模拟产生PWM
-    }
-}
-
-/**
- * Function       color_led_pwm
- * @author        Danny
- * @date          2017.07.25
- * @brief         七彩灯亮指定的颜色
- * @param[in1]    v_iRed:指定的颜色值（0-255）
- * @param[in2]    v_iGreen:指定的颜色值（0-255）
- * @param[in3]    v_iBlue:指定的颜色值（0-255）
- * @param[out]    void
- * @retval        void
- * @par History   无
- */
-void color_led_pwm(int v_iRed, int v_iGreen, int v_iBlue)
-{
-    analogWrite(LED_R, v_iRed);
-    analogWrite(LED_G, v_iGreen);
-    analogWrite(LED_B, v_iBlue);
-    delay(100);
-    return;
-}
-/**
  * Function       color_led
  * @author        Danny
  * @date          2017.07.25
@@ -762,6 +721,71 @@ void corlor_led(int v_iRed, int v_iGreen, int v_iBlue)
         digitalWrite(LED_B, LOW);
     }
 }
+
+/**
+ * Function       bubble
+ * @author        Danny
+ * @date          2017.07.26
+ * @brief         超声波测五次的数据进行冒泡排序
+ * @param[in1]    a:超声波数组首地址
+ * @param[in2]    n:超声波数组大小
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void bubble(unsigned long *a, int n)
+
+{
+    int i, j, temp;
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = i + 1; j < n; j++)
+        {
+            if (a[i] > a[j])
+            {
+                temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+        }
+    }
+}
+
+/**
+ * Function       Distance
+ * @author        Danny
+ * @date          2017.07.26
+ * @brief         超声波测五次，去掉最大值,最小值,
+ *                取平均值,提高测试准确性
+ * @param[in]     void
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void Distance()
+{
+    unsigned long ultrasonic[5] = {0};
+    int num = 0;
+    while (num < 5)
+    {
+        Distance_test();
+        //过滤掉测试距离中出现的错误数据大于500,或者distance==0
+        while (distance >= 500 || distance == 0)
+        {
+            brake();
+            Distance_test();
+        }
+        ultrasonic[num] = distance;
+        //printf("L%d:%d\r\n", num, (int)distance);
+        num++;
+        delay(10);
+    }
+    num = 0;
+    bubble(ultrasonic, 5);
+    distance = (ultrasonic[1] + ultrasonic[2] + ultrasonic[3]) / 3;
+    return;
+}
+
 /********************************************************************************************************/
 /*模式2 巡线*/
 /**
@@ -933,68 +957,7 @@ void servo_color_carstate()
         brake();
     }
 }
-/**
- * Function       bubble
- * @author        Danny
- * @date          2017.07.26
- * @brief         超声波测五次的数据进行冒泡排序
- * @param[in1]    a:超声波数组首地址
- * @param[in2]    n:超声波数组大小
- * @param[out]    void
- * @retval        void
- * @par History   无
- */
-void bubble(unsigned long *a, int n)
 
-{
-    int i, j, temp;
-    for (i = 0; i < n - 1; i++)
-    {
-        for (j = i + 1; j < n; j++)
-        {
-            if (a[i] > a[j])
-            {
-                temp = a[i];
-                a[i] = a[j];
-                a[j] = temp;
-            }
-        }
-    }
-}
-/**
- * Function       Distance
- * @author        Danny
- * @date          2017.07.26
- * @brief         超声波测五次，去掉最大值,最小值,
- *                取平均值,提高测试准确性
- * @param[in]     void
- * @param[out]    void
- * @retval        void
- * @par History   无
- */
-void Distance()
-{
-    unsigned long ultrasonic[5] = {0};
-    int num = 0;
-    while (num < 5)
-    {
-        Distance_test();
-        //过滤掉测试距离中出现的错误数据大于500,或者distance==0
-        while (distance >= 500 || distance == 0)
-        {
-            brake();
-            Distance_test();
-        }
-        ultrasonic[num] = distance;
-        //printf("L%d:%d\r\n", num, (int)distance);
-        num++;
-        delay(10);
-    }
-    num = 0;
-    bubble(ultrasonic, 5);
-    distance = (ultrasonic[1] + ultrasonic[2] + ultrasonic[3]) / 3;
-    return;
-}
 /**
  * Function       Ultrasonic_avoidMode
  * @author        Danny
@@ -1484,6 +1447,49 @@ void serial_data_postback()
     Serial.print(ReturnTemp);
     return;
 }
+
+/**
+ * Function       careRun
+ * @author        lijing
+ * @date          2019.03.19
+ * @brief         小车前进(谨慎的，遇到障碍停止并转向)
+ * @param[in]     void
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void careRun()
+{
+    servo_appointed_detection(90); //front
+    Distance();
+
+    if (distance > 20) run();
+    else
+    {
+        servo_appointed_detection(0); //right
+        Distance();
+        if (distance > 20)
+        {
+            servo_appointed_detection(90);
+            spin_right();
+            delay(200);
+        }
+        else
+        {
+            servo_appointed_detection(180); //left
+            Distance();
+            if (distance > 20)
+            {
+                servo_appointed_detection(90);
+                spin_left();
+                delay(200);
+            }
+            else
+                brake();
+        }
+    }
+}
+
 
 /**
  * Function       serialEvent
