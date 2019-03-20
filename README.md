@@ -11,7 +11,7 @@ export ARDUINO_DIR=/home/lijing/tools/arduino-1.8.9
 export ARDMK_DIR=/home/lijing/tools/Arduino-Makefile
 export AVR_TOOLS_DIR=/home/lijing/tools/arduino-1.8.9/hardware/tools/avr
 ```
-2. test
+2. Test arduino compile system
 ``` sh
 cd $ARDUINO_DIR/examples/01.Basics/Blink
 #create Makefile and content
