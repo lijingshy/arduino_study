@@ -103,7 +103,7 @@ void setup()
     pinMode(LED_B, OUTPUT);
 
     //设置舵机控制引脚为3
-    myservo.attach(servopin);
+    myservo.attach(servopin, 400, 2400);
     irrecv.enableIRIn(); // 初始化红外解码
     pinMode(RECV_PIN, INPUT_PULLUP);     //将2号管脚设置为输入并且内部上拉模式
 }
@@ -622,5 +622,3 @@ void loop()
     default: brake(); break;
     }
 }
-
-
