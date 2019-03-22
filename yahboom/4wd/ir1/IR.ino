@@ -63,7 +63,7 @@ unsigned long last = millis();
 /*灭火*/
 int Fire = A5;
 /*超声波*/
-int Distance = 0;
+int distance = 0;
 int Echo = 12;                //定义回声脚为arduino上的数字口12
 int Trig = 13;                //定义触发脚为arduino上的数字口13
 
@@ -127,8 +127,38 @@ void Distance_test()   // 量出前方距离
     digitalWrite(Trig, LOW);    // 持续给触发脚低电
     float Fdistance = pulseIn(Echo, HIGH);  // 读取高电平时间(单位：微秒)
     Fdistance = Fdistance / 58;    //为什么除以58等于厘米，  Y米=（X秒*344）/2
-    Distance = Fdistance;
+    distance = Fdistance;
 }
+
+/**
+ * Function       bubble
+ * @author        Danny
+ * @date          2017.07.26
+ * @brief         超声波测五次的数据进行冒泡排序
+ * @param[in1]    a:超声波数组首地址
+ * @param[in2]    n:超声波数组大小
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void bubble(unsigned long *a, int n)
+
+{
+    int i, j, temp;
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = i + 1; j < n; j++)
+        {
+            if (a[i] > a[j])
+            {
+                temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+        }
+    }
+}
+
 
 /**
  * Function       run
@@ -298,6 +328,39 @@ void back()
 }
 
 /**
+ * Function       Distance
+ * @author        Danny
+ * @date          2017.07.26
+ * @brief         超声波测五次，去掉最大值,最小值,
+ *                取平均值,提高测试准确性
+ * @param[in]     void
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void Distance()
+{
+    unsigned long ultrasonic[5] = {0};
+    int num = 0;
+    while (num < 5)
+    {
+        Distance_test();
+        //过滤掉测试距离中出现的错误数据大于500
+        while (distance >= 500)
+        {
+            brake();
+            Distance_test();
+        }
+        ultrasonic[num] = distance;
+        num++;
+    }
+    num = 0;
+    bubble(ultrasonic, 5);
+    distance = (ultrasonic[1] + ultrasonic[2] + ultrasonic[3]) / 3;
+    return;
+}
+
+/**
  * Function       whistle
  * @author        liusen
  * @date          2017.07.25
@@ -421,6 +484,47 @@ void right_detection()
     }
 }
 
+/**
+ * Function       careRun
+ * @author        lijing
+ * @date          2019.03.19
+ * @brief         小车前进(谨慎的，遇到障碍停止并转向)
+ * @param[in]     void
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void careRun()
+{
+    front_detection(); //front
+    Distance();
+
+    if (distance > 20) run();
+    else
+    {
+        right_detection(); //right
+        Distance();
+        if (distance > 20)
+        {
+            front_detection();
+            spin_right();
+            delay(200);
+        }
+        else
+        {
+            left_detection(); //left
+            Distance();
+            if (distance > 20)
+            {
+                front_detection();
+                spin_left();
+                delay(200);
+            }
+            else
+                brake();
+        }
+    }
+}
 
 void IR_Deal()
 {
@@ -509,7 +613,7 @@ void loop()
     switch (g_carstate)
     {
     case enSTOP: brake(); break;
-    case enRUN: run(); break;
+    case enRUN: careRun(); break;
     case enLEFT: left(); break;
     case enRIGHT: right(); break;
     case enBACK: back(); break;
