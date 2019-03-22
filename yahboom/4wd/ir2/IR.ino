@@ -804,6 +804,25 @@ void Ultrasonic_avoidMode()
         }
     }
 }
+
+/**
+ * Function       BeepOnOffMode
+ * @author        Danny
+ * @date          2017.08.17
+ * @brief         模式切换长鸣
+ * @param[in]     void
+ * @param[out]    void
+ * @retval        void
+ * @par History   无
+ */
+void BeepOnOffMode()
+{
+    pinMode(buzzer, OUTPUT);
+    digitalWrite(buzzer, LOW);   //发声音
+    delay(1000);                  //延时100ms
+    digitalWrite(buzzer, HIGH);  //不发声音
+}
+
 /********************************************************************************************************/
 /*模式:4  七彩颜色*/
 
@@ -1008,23 +1027,49 @@ void ModeBEEP(int mode)
     delay(100);
     digitalWrite(buzzer, HIGH); //不鸣
 }
+
 /**
- * Function       BeepOnOffMode
- * @author        Danny
- * @date          2017.08.17
- * @brief         模式切换长鸣
+ * Function       careRun
+ * @author        lijing
+ * @date          2019.03.19
+ * @brief         小车前进(谨慎的，遇到障碍停止并转向)
  * @param[in]     void
  * @param[out]    void
  * @retval        void
  * @par History   无
  */
-void BeepOnOffMode()
+void careRun()
 {
-    pinMode(buzzer, OUTPUT);
-    digitalWrite(buzzer, LOW);   //发声音
-    delay(1000);                  //延时100ms
-    digitalWrite(buzzer, HIGH);  //不发声音
+    front_detection(); //front
+    Distance();
+
+    if (distance > 20) run();
+    else
+    {
+        right_detection(); //right
+        Distance();
+        if (distance > 20)
+        {
+            front_detection();
+            spin_right();
+            delay(200);
+        }
+        else
+        {
+            left_detection(); //left
+            Distance();
+            if (distance > 20)
+            {
+                front_detection();
+                spin_left();
+                delay(200);
+            }
+            else
+                brake();
+        }
+    }
 }
+
 
 /**
  * Function       IR_Deal
@@ -1115,6 +1160,9 @@ void loop()
     // 切换不同功能模式, 功能模式显示
     if(g_modeSelect != 0)
     {
+        if (g_modeSelect == 1) g_modeSelect = 0;
+        else Ultrasonic_avoidMode();
+#if 0
         switch (g_modeSelect)
         {
         case 1: g_modeSelect = 0; break; //红外遥控
@@ -1124,6 +1172,7 @@ void loop()
         case 5: LightSeeking_Mode(); break;  //寻光模式
         case 6: Ir_flow_Mode(); break;  //跟随模式
         }
+#endif
     }
 
     switch (g_colorlight)
@@ -1144,7 +1193,7 @@ void loop()
         switch (g_carstate)
         {
         case enSTOP: brake(); break;
-        case enRUN: run(); break;
+        case enRUN: careRun(); break;
         case enLEFT: left(); break;
         case enRIGHT: right(); break;
         case enBACK: back(); break;
