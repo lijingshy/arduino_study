@@ -2,3 +2,4 @@ tags
 *.o
 build-uno
 .vscode
+.DS_Store
