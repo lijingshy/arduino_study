@@ -1462,34 +1462,53 @@ void serial_data_postback()
  */
 void careRun()
 {
+    String msg;
     servo_appointed_detection(90); //front
+    msg = "Front:";
     Distance();
 
-    if (distance > 20) run();
+    if (distance > 15) 
+    {
+        run();
+        msg +=distance;
+    }
     else
     {
         servo_appointed_detection(0); //right
+        delay(200);
+        msg = "Right:";
         Distance();
-        if (distance > 20)
+        msg += distance;
+        if (distance > 15)
         {
             servo_appointed_detection(90);
             spin_right();
             delay(200);
+            msg += " Turn Right";
         }
         else
         {
             servo_appointed_detection(180); //left
+            delay(200);
+            msg = "Left:";
             Distance();
-            if (distance > 20)
+            msg += distance;
+            if (distance > 15)
             {
                 servo_appointed_detection(90);
                 spin_left();
                 delay(200);
+                msg += " Turn Left";
             }
             else
+            {
+                msg += " Brake";
                 brake();
+            }
         }
     }
+
+    Serial.println(msg);
 }
 
 
@@ -1535,6 +1554,7 @@ void serialEvent()
  * @retval        void
  * @par History   无
  */
+#if 0
 void loop()
 {
     if (NewLineReceived)
@@ -1554,7 +1574,7 @@ void loop()
     case 6: Ir_flow_Mode(); break;  //跟随模式
     }
 
-#if 0
+#if 1
     //让小车串口平均每秒发送采集的数据给手机蓝牙apk
     //避免串口打印数据速度过快,造成apk无法正常运行
     if (g_modeSelect == 0 && g_motor == false)
@@ -1575,3 +1595,13 @@ void loop()
     }
 #endif
 }
+#else
+void loop()
+{
+    careRun();
+    //servo_appointed_detection(180);
+    //Distance();
+    //Serial.println(String(distance));
+    //delay(1000);
+}
+#endif
