@@ -43,8 +43,8 @@ int LED_B = 9;      //LED_B接在arduino上的数字9口
 int Left_motor_go = 8;        //左电机前进 AIN1
 int Left_motor_back = 7;      //左电机后退 AIN2
 
-int Right_motor_go = 2;       //右电机前进 BIN1
-int Right_motor_back = 4;     //右电机后退 BIN2
+int Right_motor_go = 4;       //右电机前进 BIN1
+int Right_motor_back = 2;     //右电机后退 BIN2
 
 int Left_motor_pwm = 6;       //左电机控速 PWMA
 int Right_motor_pwm = 5;      //右电机控速 PWMB
@@ -530,7 +530,7 @@ void IR_Deal()
 {
     if (irrecv.decode(&results))
     {
-        //Serial.println(results.value, HEX);
+        Serial.println(results.value, HEX);
 
 
         //根据不同值来执行不同操作
@@ -613,7 +613,7 @@ void loop()
     switch (g_carstate)
     {
     case enSTOP: brake(); break;
-    case enRUN: careRun(); break;
+    case enRUN: run(); break;
     case enLEFT: left(); break;
     case enRIGHT: right(); break;
     case enBACK: back(); break;
