@@ -1,5 +1,5 @@
 /**
- * @par Copyright (C): 2010-2019, Shenzhen Yahboom Tech
+ * Copyright (C): 2010-2019, Shenzhen Yahboom Tech
  * @file         bluetooth_control.c
  * @author       Danny
  * @version      V1.0
@@ -30,12 +30,12 @@ enum {
 } enCarState;
 
 /*电机引脚设置*/
-int Left_motor_go = 8;    //左电机前进(AIN1)
-int Left_motor_back = 7;  //左电机后退(AIN2)
-int Right_motor_go = 4;   //右电机前进(BIN1)
-int Right_motor_back = 2; //右电机后退(BIN2)
-int Left_motor_pwm = 6;   //左电机控速 PWMA
-int Right_motor_pwm = 5;  //右电机控速 PWMB
+int Left_motor_go = 4;    //左电机前进(AIN1)
+int Left_motor_back = 2;  //左电机后退(AIN2)
+int Right_motor_go = 8;   //右电机前进(BIN1)
+int Right_motor_back = 7; //右电机后退(BIN2)
+int Left_motor_pwm = 5;   //左电机控速 PWMA
+int Right_motor_pwm = 6;  //右电机控速 PWMB
 
 //循迹红外引脚定义
 //TrackSensorLeftPin1 TrackSensorLeftPin2 TrackSensorRightPin1 TrackSensorRightPin2
@@ -79,8 +79,8 @@ int LDR_pin = A5;
 int position = 0; //七彩探照
 
 /*电压引脚及其变量设置*/
-int VoltagePin = A0;
-int VoltageValue = 0;
+//int VoltagePin = A0;
+//int VoltageValue = 0;
 
 /*小车初始速度控制*/
 int CarSpeedControl = 150;
@@ -94,9 +94,9 @@ int TrigPin = 13;         //Trig触发脚
 float distance = 0;
 
 /*RGBLED引脚设置*/
-int LED_R = 11;           //LED_R接在arduino上的数字11口
+int LED_R = 9;           //LED_R接在arduino上的数字11口
 int LED_G = 10;           //LED_G接在arduino上的数字10口
-int LED_B = 9;            //LED_B接在arduino上的数字9口
+int LED_B = 11;            //LED_B接在arduino上的数字9口
 
 /*灭火电机引脚设置*/
 int OutfirePin = A5;
@@ -174,7 +174,7 @@ void setup()
 
     //初始化蜂鸣器IO为输出方式
     pinMode(buzzer, OUTPUT);
-    digitalWrite(buzzer, HIGH);
+    digitalWrite(buzzer, LOW);
 
     //初始化超声波引脚模式
     pinMode(EchoPin, INPUT);   //定义超声波输入脚
@@ -260,6 +260,7 @@ void Distance_test()
  */
 float voltage_test()
 {
+    #if 0
     pinMode(VoltagePin, INPUT);           //电压检测引脚和蜂鸣器引脚A5调整引脚模式来分时复用
     VoltageValue = analogRead(VoltagePin);//读取A0口值,换算为电压值
 
@@ -301,6 +302,7 @@ float voltage_test()
     pinMode(VoltagePin, OUTPUT);
     digitalWrite(buzzer, HIGH);
     return 0;
+    #endif
 }
 
 /**
@@ -667,14 +669,14 @@ void back()
 void whistle()
 {
     pinMode(buzzer, OUTPUT);
-    digitalWrite(buzzer, LOW);   //发声音
+    digitalWrite(buzzer, HIGH);   //发声音
     delay(100);                  //延时100ms
-    digitalWrite(buzzer, HIGH);  //不发声音
+    digitalWrite(buzzer, LOW);  //不发声音
     delay(1);                    //延时1ms
 
-    digitalWrite(buzzer, LOW);   //发声音
+    digitalWrite(buzzer, HIGH);   //发声音
     delay(200);                  //延时200ms
-    digitalWrite(buzzer, HIGH);  //不发声音
+    digitalWrite(buzzer, LOW);  //不发声音
     delay(2);                    //延时2ms
     return;
 }
@@ -1150,13 +1152,13 @@ void ModeBEEP(int mode)
     pinMode(buzzer, OUTPUT);
     for (int i = 0; i < mode + 1; i++)
     {
-        digitalWrite(buzzer, LOW); //鸣
+        digitalWrite(buzzer, HIGH); //鸣
         delay(100);
-        digitalWrite(buzzer, HIGH); //不鸣
+        digitalWrite(buzzer, LOW); //不鸣
         delay(100);
     }
     delay(100);
-    digitalWrite(buzzer, HIGH); //不鸣
+    digitalWrite(buzzer, LOW); //不鸣
 }
 /**
  * Function       BeepOnOffMode
@@ -1171,9 +1173,9 @@ void ModeBEEP(int mode)
 void BeepOnOffMode()
 {
     pinMode(buzzer, OUTPUT);
-    digitalWrite(buzzer, LOW);   //发声音
+    digitalWrite(buzzer, HIGH);   //发声音
     delay(1000);                  //延时100ms
-    digitalWrite(buzzer, HIGH);  //不发声音
+    digitalWrite(buzzer, LOW);  //不发声音
 }
 /**
  * Function       serial_data_parse
@@ -1537,6 +1539,7 @@ void loop()
 {
     if (NewLineReceived)
     {
+        //Serial.print(InputString);
         serial_data_parse();  //调用串口解析函数
     }
 
@@ -1551,6 +1554,7 @@ void loop()
     case 6: Ir_flow_Mode(); break;  //跟随模式
     }
 
+#if 0
     //让小车串口平均每秒发送采集的数据给手机蓝牙apk
     //避免串口打印数据速度过快,造成apk无法正常运行
     if (g_modeSelect == 0 && g_motor == false)
@@ -1569,5 +1573,5 @@ void loop()
             }
         }
     }
-
+#endif
 }
