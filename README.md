@@ -28,3 +28,14 @@ make
 make upload
 ```
 
+## Arudino IDE support ESP8266 wifi
+1. 安装扩展版
+- 打开Arduino IDE找到首选项，添加附加开发板管理器网址http://arduino.esp8266.com/stable/package_esp8266com_index.json
+- 打开开发板管理器中找到ESP8266下载即可，这时就可以选择开发板了
+  
+2. 代码范例
+``` c++
+#include <ESP8266WiFi.h>
+...
+```
+
