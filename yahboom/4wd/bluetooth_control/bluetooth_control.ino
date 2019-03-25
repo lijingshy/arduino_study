@@ -9,6 +9,14 @@
  * @par History  见如下说明
  *
  */
+
+#define DEBUG 1
+
+#ifdef DEBUG
+#include <SoftwareSerial.h>
+SoftwareSerial BT(10, 11);
+#endif
+
 #define run_car     '1'//按键前
 #define back_car    '2'//按键后
 #define left_car    '3'//按键左
@@ -147,6 +155,7 @@ void printf_begin(void)
  * @retval        void
  * @par History   无
  */
+#ifndef DEBUG
 void setup()
 {
     //串口波特率设置
@@ -197,6 +206,15 @@ void setup()
 
     randomSeed(analogRead(0));   //设置一个随机数产生源模拟口 0
 }
+#else
+void setup()
+{
+    BT.begin(9600);
+    Serial.begin(9600);
+
+    Serial.print("BT test ok");
+}
+#endif
 
 /**
  * Function       servo_pulse
@@ -1554,12 +1572,11 @@ void serialEvent()
  * @retval        void
  * @par History   无
  */
-#if 0
+#ifndef DEBUG
 void loop()
 {
     if (NewLineReceived)
     {
-        //Serial.print(InputString);
         serial_data_parse();  //调用串口解析函数
     }
 
@@ -1598,7 +1615,41 @@ void loop()
 #else
 void loop()
 {
-    careRun();
+    BT.listen();
+    #if 0
+    while (BT.available() > 0)
+    {
+        char inByte = BT.read();
+        Serial.write(inByte);
+    }
+    #endif
+
+    NewLineReceived = false;
+
+    while (BT.available())
+    {
+        IncomingByte = BT.read();
+        if (IncomingByte == '$')
+        {
+            StartBit = true;
+        }
+        if (StartBit == true)
+        {
+            InputString += (char) IncomingByte;
+        }
+        if (IncomingByte == '#')
+        {
+            NewLineReceived = true;
+            StartBit = false;
+        }
+    }
+    if (NewLineReceived)
+    {
+        Serial.println(InputString);
+        //serial_data_parse();  //调用串口解析函数
+    }
+
+    //careRun();
     //servo_appointed_detection(180);
     //Distance();
     //Serial.println(String(distance));
