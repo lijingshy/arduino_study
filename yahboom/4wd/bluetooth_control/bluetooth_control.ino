@@ -1207,7 +1207,6 @@ void BeepOnOffMode()
  */
 void serial_data_parse()
 {
-
     /*解析模式切换*/
     //先判断是否是模式选择
     if (InputString.indexOf("MODE") > 0 && InputString.indexOf("4WD") > 0)
@@ -1340,8 +1339,7 @@ void serial_data_parse()
             {
                 CarSpeedControl = 255;
             }
-        }
-        if (InputString[7] == '2')//减速，每次减50
+        } else if (InputString[7] == '2')//减速，每次减50
         {
             CarSpeedControl -= 50;
             if (CarSpeedControl < 50)
@@ -1354,8 +1352,7 @@ void serial_data_parse()
         if (InputString[9] == '1') //舵机旋转到180度
         {
             servo_appointed_detection(180);
-        }
-        if (InputString[9] == '2') //舵机旋转到0度
+        } else if (InputString[9] == '2') //舵机旋转到0度
         {
             servo_appointed_detection(0);
         }
@@ -1624,8 +1621,6 @@ void loop()
     }
     #endif
 
-    NewLineReceived = false;
-
     while (BT.available())
     {
         IncomingByte = BT.read();
@@ -1643,9 +1638,12 @@ void loop()
             StartBit = false;
         }
     }
+
     if (NewLineReceived)
     {
         Serial.println(InputString);
+        NewLineReceived = false;
+        InputString = "";
         //serial_data_parse();  //调用串口解析函数
     }
 
