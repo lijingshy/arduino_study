@@ -1207,6 +1207,7 @@ void BeepOnOffMode()
  */
 void serial_data_parse()
 {
+    String parseStr;
     /*解析模式切换*/
     //先判断是否是模式选择
     if (InputString.indexOf("MODE") > 0 && InputString.indexOf("4WD") > 0)
@@ -1237,6 +1238,10 @@ void serial_data_parse()
         }
         InputString = "";                     //清空串口数据
         NewLineReceived = false;
+#ifdef DEBUG
+        parseStr = "Parse MODE:" + String(g_modeSelect);
+        Serial.println(parseStr);
+#endif
         return;
     }
 
@@ -1245,6 +1250,9 @@ void serial_data_parse()
     {
         InputString = "";                     //清空串口数据
         NewLineReceived = false;
+#ifdef DEBUG
+        Serial.println("Parse return with mode = 0");
+#endif
         return;
     }
 
@@ -1264,6 +1272,10 @@ void serial_data_parse()
             servo_appointed_detection(180 - m_kp);//转动到指定角度m_kp
             InputString = "";                     //清空串口数据
             NewLineReceived = false;
+#ifdef DEBUG
+            parseStr = "Parse PTZ:" + String(180-m_kp);
+            Serial.println(parseStr);
+#endif
             return;
         }
     }
@@ -1304,6 +1316,10 @@ void serial_data_parse()
             color_led_pwm(red, green, blue);//点亮相应颜色的灯
             InputString = "";               //清空串口数据
             NewLineReceived = false;
+#ifdef DEBUG
+            parseStr = "Parse COLOR R:" + String(red) + " G:" + String(green) + " B:" + String(blue);
+            Serial.println(parseStr);
+#endif
             return;
         }
     }
@@ -1329,6 +1345,9 @@ void serial_data_parse()
         if (InputString[5] == '1')     //鸣笛
         {
             whistle();
+#ifdef DEBUG
+            Serial.println("Parse WHISTLE");
+#endif
         }
 
         //小车加减速判断
@@ -1339,22 +1358,38 @@ void serial_data_parse()
             {
                 CarSpeedControl = 255;
             }
-        } else if (InputString[7] == '2')//减速，每次减50
+#ifdef DEBUG
+            parseStr = "Parse SPEEDUP:" + String(CarSpeedControl);
+            Serial.println(parseStr);
+#endif
+        } 
+        else if (InputString[7] == '2')//减速，每次减50
         {
             CarSpeedControl -= 50;
             if (CarSpeedControl < 50)
             {
                 CarSpeedControl = 100;
             }
+#ifdef DEBUG
+            parseStr = "Parse SPEEDDOWN:" + String(CarSpeedControl);
+            Serial.println(parseStr);
+#endif
         }
 
         //舵机左旋右旋判断
         if (InputString[9] == '1') //舵机旋转到180度
         {
             servo_appointed_detection(180);
-        } else if (InputString[9] == '2') //舵机旋转到0度
+#ifdef DEBUG
+            Serial.println("Parse SERVO:180");
+#endif
+        } 
+        else if (InputString[9] == '2') //舵机旋转到0度
         {
             servo_appointed_detection(0);
+#ifdef DEBUG
+            Serial.println("Parse SERVO:0");
+#endif
         }
 
         //点灯判断
@@ -1388,6 +1423,9 @@ void serial_data_parse()
         if (InputString[17] == '1') //舵机旋转到90度
         {
             servo_appointed_detection(90);
+#ifdef DEBUG
+            Serial.println("Parse SERVO:90");
+#endif
         }
 
         //小车的前进,后退,左转,右转,停止动作
@@ -1419,6 +1457,11 @@ void serial_data_parse()
         case enTRIGHT: spin_right(); break;
         default: brake(); break;
         }
+
+#ifdef DEBUG
+        parseStr = "Parse STATE:" + String(g_CarState);
+        Serial.println(parseStr);
+#endif
     }
 }
 
